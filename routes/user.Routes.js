@@ -1,40 +1,32 @@
 const express = require('express')
 const { authJwt } = require("../middlewares");
 const router =express.Router();
-
 const controller = require("../controllers/user.controller");
-module.exports = function(app) {
-  app.use(function(req, res, next) {
-    res.header(
-      "Access-Control-Allow-Headers",
-      "x-access-token, Origin, Content-Type, Accept"
-    );
-    next();
-  });
-  app.get("/api/all", controller.allAccess);
-  app.get("/api/user", [authJwt.verifyToken], controller.userBoard);
-  
-  app.get(
-    "/api/admin",
+const bcrypt = require('bcryptjs')
+const User = require("../models/user.model");
+const { user } = require('../models');
+
+//GET ALL USERS "/user" ///
+router.get("/", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+//GET USER BY ID //
+router.get("/:user_id", (req, res) => {
+  res.json(res.users);
+});
+  //GET ADMIN DATA //
+  router.get(
+    "/admin",
     [authJwt.verifyToken, authJwt.isAdmin],
     controller.adminBoard
   );
 
-//POST
-router.post("/", async (req, res) => {
-  const user = new User({
-    user_username: req.body.user_username,
-    email: req.body.email,
-    password: req.body.password,
-    phone_number: req.body.phone_number,
-  });
-  try {
-    const newUser = await user.save();
-    res.status(201).json(newUser);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
+ /// POST ON USERS//
 
 router.post("/signup", async (req, res) => {
   try {
@@ -53,8 +45,11 @@ router.post("/signup", async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
-//
-router.patch("/signin", async (req, res) => {
+
+
+
+// user login //
+router.patch("/login", [authJwt.verifyToken], async (req, res) => {
   try {
     User.findOne({ username: req.body.username }, (err, customer) => {
       if (error) return handleError(error);
@@ -74,10 +69,25 @@ router.patch("/signin", async (req, res) => {
   }
 });
 
+router.post("/", async (req, res) => {
+  const user = new User({
+    username: req.body.user_fullname,
+    email: req.body.email,
+    password: req.body.password,
+
+  });
+  try {
+    const newUser = await user.save();
+    res.status(201).json(newUser);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 //updated user
-router.patch("/", async (req, res) => {
+router.patch("/signup/_id", async (req, res) => {
   if (req.body.username != null) {
-    res.user.username = req.body.username;
+    res.username = req.body.username;
   }
   if (req.body.email != null) {
     req.body.email = req.body.email;
@@ -97,7 +107,7 @@ router.patch("/", async (req, res) => {
   }
 });
 
-//DELETING
+//DELETING//
 router.delete("/:id", getUser, async (req, res) => {
   try {
     await res.user.remove();
@@ -106,7 +116,7 @@ router.delete("/:id", getUser, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-//PATCH
+
 async function getUser(req, res, next) {
   let user;
   try {
@@ -123,4 +133,3 @@ async function getUser(req, res, next) {
 module.exports = router;
 
   
-};

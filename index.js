@@ -55,8 +55,15 @@ app.get("/", (req, res) => {
     });
   }
 
-require('./routes/auth.routes')(app);
-require('./routes/user.routes')(app);
+const authRoutes = require('./routes/auth.Routes');
+const userRoutes = require('./routes/user.Routes');
+const productsRoutes = require('./routes/products.Routes');
+const contactRoutes = require('./routes/contact.Router');
 
 
+ app.use("/auth",authRoutes)
+ app.use("/contact",contactRoutes)
+ app.use("/products",productsRoutes)
+ app.use('/user', userRoutes)
+ 
 app.listen(4000,()=> console.log(`Server Started`))

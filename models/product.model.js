@@ -16,7 +16,7 @@ const Product = mongoose.model(
     },
 
     price : {
-    type :Number,
+    type :String,
     required:true
 },
     description : {
@@ -30,12 +30,6 @@ const Product = mongoose.model(
         default:[]
      },
 
-    roles: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Role"
-      }
-    ]
   })
 );
 module.exports = Product;
